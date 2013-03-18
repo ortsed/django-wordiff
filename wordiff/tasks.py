@@ -2,6 +2,7 @@ from wordiff.models import ObjectGram, GramRankings
 from wordiff.n_gram_splitter import lang_model
 from django.conf import settings
 from HTMLParser import HTMLParser
+from django.contrib.contenttypes.models import ContentType
 
 NGRAM_LENGTH = 8
 
@@ -42,32 +43,32 @@ def gram_parse_object_text(object, object_text):
 
 
 def update_gram_rankings():
-	object_grams = ObjectGram.objects.all()
-	#ObjectGram.objects.distinct("content_type").all()
-	
+	# clear out the rankings DB first	
 	GramRankings.objects.all().delete()
 	
-	for object_gram in object_grams:
+	content_types = ContentType.objects.all()	
+	
+	for content_type in content_types:
 		rankings = ObjectGram.objects.raw("\
 		SELECT id, gram, COUNT(*) as quantity, MAX(date_created) as date_recent_match FROM wordiff_objectgram WHERE \
 		content_type_id='%s'\
 		GROUP BY gram ORDER BY quantity DESC LIMIT 20\
-		" % object_gram.content_type_id)
+		" % content_type.id)
 		
 		
-	inserts = []
+		inserts = []
 	
-	for rank in rankings:
-		if rank.quantity > 1:
-			ranking = GramRankings()
-			ranking.gram = rank.gram
-			ranking.ranking = rank.quantity
-			ranking.content_type = rank.content_type
-			ranking.date_recent_match = rank.date_recent_match
-			inserts.append(ranking)
+		for rank in rankings:
+			if rank and rank.quantity > 1:
+				ranking = GramRankings()
+				ranking.gram = rank.gram
+				ranking.ranking = rank.quantity
+				ranking.content_type = rank.content_type
+				ranking.date_recent_match = rank.date_recent_match
+				inserts.append(ranking)
 	
-	if inserts:
-		GramRankings.objects.bulk_create(inserts)
+		if inserts:
+			GramRankings.objects.bulk_create(inserts)
 
 """ 
 
