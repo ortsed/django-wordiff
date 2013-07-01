@@ -2,7 +2,7 @@ from wordiff.models import ObjectGram, GramRankings
 from wordiff.n_gram_splitter import lang_model
 from django.conf import settings
 from HTMLParser import HTMLParser
-from django.contrib.contenttypes.models import ContentType
+from django.db import connection
 
 NGRAM_LENGTH = 8
 
@@ -43,48 +43,28 @@ def gram_parse_object_text(object, object_text):
 
 
 def update_gram_rankings():
-	# clear out the rankings DB first	
-	GramRankings.objects.all().delete()
-	
-	content_types = ContentType.objects.all()	
-	
-	for content_type in content_types:
-		rankings = ObjectGram.objects.raw("\
-		SELECT id, gram, COUNT(*) as quantity, MAX(date_created) as date_recent_match FROM wordiff_objectgram WHERE \
-		content_type_id='%s'\
-		GROUP BY gram ORDER BY quantity DESC LIMIT 20\
-		" % content_type.id)
+	cursor = connection.cursor()
+	cursor.execute("DELETE FROM wordiff_objectgramrank;\
+	INSERT INTO \
+			wordiff_objectgramrank\
+			(`gram`, `rank`)\
+		\
+			SELECT gram, count(id) FROM wordiff_objectgram\
+			GROUP BY gram;\
+		UPDATE wordiff_objectgram\
+		LEFT JOIN wordiff_objectgramrank\
+		ON wordiff_objectgram.gram = wordiff_objectgramrank.gram\
+		SET wordiff_objectgram.rank = wordiff_objectgramrank.rank\
+		")
 		
-		
-		inserts = []
+def remove_ignored_grams():
+	cursor = connection.cursor()
+	cursor.execute("DELETE FROM wordiff_objectgram WHERE gram IN (SELECT gram from wordiff_ignoredgram)")
 	
-		for rank in rankings:
-			if rank and rank.quantity > 1:
-				ranking = GramRankings()
-				ranking.gram = rank.gram
-				ranking.ranking = rank.quantity
-				ranking.content_type = rank.content_type
-				ranking.date_recent_match = rank.date_recent_match
-				inserts.append(ranking)
 	
-		if inserts:
-			GramRankings.objects.bulk_create(inserts)
-
-""" 
-
---- SAMPLE post_save signal function ---
+def add_common_grams_to_ignored():
+	cursor = connection.cursor()
+	cursor.execute("INSERT INTO wordiff_ignoredgram (`gram`, `date_created`) SELECT gram, NOW() FROM wordiff_objectgram WHERE rank > 25")
 
 
-from django.db.models.signals import post_save
-from django.dispatch import receiver
-from wordiff.tasks import gram_parse_object_text
 
-from blog.models import Post
-
-@receiver(post_save, sender=Post)
-def post_save_gram_parse(sender, instance, created, **kwargs):
-	if created:
-		gram_parse_object_text(instance, instance.content)
-
-
-"""
