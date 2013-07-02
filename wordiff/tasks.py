@@ -58,8 +58,9 @@ def update_gram_rankings():
 		")
 		
 def remove_ignored_grams():
-	cursor = connection.cursor()
-	cursor.execute("DELETE FROM wordiff_objectgram WHERE gram IN (SELECT gram from wordiff_ignoredgram)")
+	ignored_grams = IgnoredGram.objects.all()
+	for gram in ignored_grams:
+		ObjectGram.objects.filter(gram=gram).delete()
 	
 	
 def add_common_grams_to_ignored():
