@@ -1,4 +1,4 @@
-from wordiff.models import ObjectGram, GramRankings
+from wordiff.models import ObjectGram, IgnoredGram, GramRankings
 from wordiff.n_gram_splitter import lang_model
 from django.conf import settings
 from HTMLParser import HTMLParser
