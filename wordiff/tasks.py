@@ -3,6 +3,7 @@ from wordiff.n_gram_splitter import lang_model
 from django.conf import settings
 from HTMLParser import HTMLParser
 from django.db import connection
+from datetime.datetime import today
 
 NGRAM_LENGTH = 8
 
@@ -64,8 +65,16 @@ def remove_ignored_grams():
 	
 	
 def add_common_grams_to_ignored():
-	cursor = connection.cursor()
-	cursor.execute("INSERT INTO wordiff_ignoredgram (`gram`, `date_created`) SELECT gram, NOW() FROM wordiff_objectgram WHERE rank > 25")
+	common_grams = ObjectGram.objects.filter(rank__gt=25)
+	for gram in common_grams:
+		ignored_gram = IgnoredGram()
+		ignored_gram.gram = gram.gram
+		ignored_gram.date_published = today()
+		ignored_gram.save()
+		gram.delete()
+	
+#	cursor = connection.cursor()
+#	cursor.execute("INSERT INTO wordiff_ignoredgram (`gram`, `date_created`) SELECT gram, NOW() FROM wordiff_objectgram WHERE rank > 25")
 
 
 
