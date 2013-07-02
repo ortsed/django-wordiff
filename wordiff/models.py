@@ -33,5 +33,5 @@ class GramRankings(models.Model):
 	rank = models.PositiveIntegerField(null=False, blank=False)
 	
 class IgnoredGram(models.Model):
-    gram = models.CharField(max_length=1000L)
+    gram = models.CharField(max_length=255L, unique=True)
     date_created = models.DateTimeField(auto_now_add=True)
