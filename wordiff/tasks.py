@@ -38,7 +38,7 @@ def gram_parse_object_text(object, object_text):
 	for gram in parsed.gram(NGRAM_LENGTH):
 		object_gram = ObjectGram()
 		object_gram.gram = gram
-		object_gram.state = object.bill.bill_details.state
+		object_gram.state = object.bill.bill_details["state"]
 		object_gram.object = object
 		object_gram.save()
 		
