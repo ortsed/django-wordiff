@@ -14,7 +14,7 @@ class ObjectGram(models.Model):
 	
 	gram = models.CharField(max_length=1000, null=False, blank=False)
 	
-	rank = models.PositiveIntegerField(null=False, blank=False)
+	rank = models.PositiveIntegerField(null=True, blank=True)
 
 	date_created = models.DateTimeField(auto_now_add=True)
 	
