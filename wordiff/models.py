@@ -8,6 +8,8 @@ class ObjectGram(models.Model):
 
 	objects = ObjectGramManager()
 	
+	state = models.CharField(max_length=10, null=False, blank=False)
+	
 	object = models.ForeignKey(Bill_File, null=False, blank=False)
 	
 	gram = models.CharField(max_length=1000, null=False, blank=False)
