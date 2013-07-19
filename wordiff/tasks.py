@@ -38,7 +38,8 @@ def gram_parse_object_text(object, object_text):
 	for gram in parsed.gram(NGRAM_LENGTH):
 		object_gram = ObjectGram()
 		object_gram.gram = gram
-		object_gram.content_object = object
+		object_gram.state = object.bill.bill_details.state
+		object_gram.object = object
 		object_gram.save()
 		
 
@@ -51,7 +52,7 @@ def update_gram_rankings():
 			(`gram`, `rank`)\
 		\
 			SELECT gram, count(id) FROM wordiff_objectgram\
-			GROUP BY gram;\
+			GROUP BY gram,state;\
 		UPDATE wordiff_objectgram\
 		LEFT JOIN wordiff_objectgramrank\
 		ON wordiff_objectgram.gram = wordiff_objectgramrank.gram\
