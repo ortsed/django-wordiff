@@ -46,18 +46,23 @@ def gram_parse_object_text(object, object_text):
 
 def update_gram_rankings():
 	cursor = connection.cursor()
-	cursor.execute("DELETE FROM wordiff_objectgramrank;\
-	INSERT INTO \
-			wordiff_objectgramrank\
-			(`gram`, `rank`)\
-		\
-			SELECT gram, count(id) FROM wordiff_objectgram\
-			GROUP BY gram,state;\
-		UPDATE wordiff_objectgram\
-		LEFT JOIN wordiff_objectgramrank\
-		ON wordiff_objectgram.gram = wordiff_objectgramrank.gram\
-		SET wordiff_objectgram.rank = wordiff_objectgramrank.rank\
-		")
+	cursor.execute("""
+	DELETE FROM wordiff_objectgramrank;
+	DELETE FROM wordiff_objectgram_unique;
+	
+	INSERT INTO wordiff_objectgram_unique (`gram`, `state`) SELECT DISTINCT gram, state FROM wordiff_objectgram;
+	
+	INSERT INTO 
+			wordiff_objectgramrank
+			(`gram`, `rank`)
+		
+			SELECT gram, count(id) FROM wordiff_objectgram_unique
+			GROUP BY gram;
+		UPDATE wordiff_objectgram
+		LEFT JOIN wordiff_objectgramrank
+		ON wordiff_objectgram.gram = wordiff_objectgramrank.gram
+		SET wordiff_objectgram.rank = wordiff_objectgramrank.rank
+		""")
 		
 def remove_ignored_grams():
 	ignored_grams = IgnoredGram.objects.all()

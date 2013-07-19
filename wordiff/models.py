@@ -34,6 +34,12 @@ class GramRankings(models.Model):
 	
 	rank = models.PositiveIntegerField(null=False, blank=False)
 	
+class GramUnique(models.Model):
+
+	gram = models.CharField(max_length=1000, null=False, blank=False)
+	
+	state = models.CharField(max_length=10, null=False, blank=False)
+	
 class IgnoredGram(models.Model):
     gram = models.CharField(max_length=255L, unique=True)
     date_created = models.DateTimeField(auto_now_add=True)
