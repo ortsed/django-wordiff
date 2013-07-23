@@ -50,7 +50,7 @@ def update_gram_rankings():
 	DELETE FROM wordiff_objectgramrank;
 	DELETE FROM wordiff_objectgram_unique;
 	
-	INSERT INTO wordiff_objectgram_unique (`gram`, `state`) SELECT DISTINCT gram, state FROM wordiff_objectgram WHERE gram NOT IN (SELECT gram FROM wordiff_ignoredgram);
+	INSERT INTO wordiff_objectgram_unique (`gram`, `state`) SELECT DISTINCT gram, state FROM wordiff_objectgram;
 	
 	INSERT INTO 
 			wordiff_objectgramrank
